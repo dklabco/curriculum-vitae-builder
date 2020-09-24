@@ -1,10 +1,22 @@
 # Curriculum-Vitae Builder
 
-## How to start
+[![Build Status](https://travis-ci.com/dklabco/curriculum-vitae-builder.svg?branch=master)](https://travis-ci.com/dklabco/curriculum-vitae-builder)
+
+## How to start the dev mode
 
 1. clone this project and `cd` into the project root directory
 2. run `npm install` (it'll take a while to download all frontend & backend libraries & DevTools)
-3. run `npm start` then follow the pointer from the console log
+3. run `npm run dev` then follow the pointer from the console log
+
+Changes to the client-side or server-side code will be picked up automatically
+
+## How to generate the production build
+
+```javascript
+NODE_ENV=production npm run build
+```
+
+When the script finishes, the server app should be available at `build/server/main.js`, which can be ran with `node` itself, or your process manager of choice (e.g. `pm2`)
 
 ## How to test
 
