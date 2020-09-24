@@ -1,5 +1,6 @@
 import { Request, Response } from "restify";
 import { outputView, submitEntry, getEntries } from "./helper";
+import { authLinkedIn } from "./route-handlers/authlinkedin";
 import somnus from "somnus";
 
 async function main(): Promise<void> {
@@ -12,9 +13,13 @@ async function main(): Promise<void> {
         routeConfig: {
 
             "get /": (req: Request, res: Response) => outputView(req, res, "./view-templates/index.html"),
+            "get /privacy-policy": (req: Request, res: Response) => outputView(req, res, "./view-templates/index.html"),
+            "get /terms-of-service": (req: Request, res: Response) => outputView(req, res, "./view-templates/index.html"),
 
             "post /entry": submitEntry,
             "get /entries": getEntries,
+            
+            "get /auth/linkedin": authLinkedIn,
 
             // just during dev, for prod, a reverse proxy is better
             "get /js/*": somnus.restify.plugins.serveStatic({ directory: "../public/" }),

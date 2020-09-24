@@ -1,124 +1,119 @@
 import * as React from "react";
-import { useState } from "react";
-import { Classes, Dialog, InputGroup, Button, Intent, H5, Callout } from "@blueprintjs/core";
-import { isValidEmail } from "./helper";
-import { submitEntry } from "./services";
-import { IRespPayload } from "./services";
+import { FunctionComponent } from "react";
+import { useState, useEffect } from "react";
+import { Classes, Dialog, AnchorButton, Intent, H5, Callout } from "@blueprintjs/core";
+import { LinkedInSignIn } from "./components/LinkedInSignIn";
+import { PrivacyPolicy } from "./components/PrivacyPolicy";
+import { TermsOfService } from "./components/TermsOfService";
+import { UrlVars } from "./services";
+import { getInitLinkedInAuthRequest } from "./services";
 
-const App: React.FunctionComponent = () => {
+enum AppSection {
+  LinkedInSignIn = "/",
+  OAuthCode = "/auth/linkedin?code",
+  PrivacyPolicy = "/privacy-policy",
+  TermsOfService = "/terms-of-service"
+}
 
-    const [firstName, setFirstName] = useState<string>("");
-    const [lastName, setLastName] = useState<string>("");
-    const [email, setEmail] = useState<string>("");
-    // const [eventDate, setEventDate] = useState<Date>(new Date());
-    const [errors, setErrors] = useState<string[]>([]);
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-    const [feedback, setFeedback] = useState<string>("");
+const dialogMinWidths: { [viewName: string]: number } = {
+  [AppSection.LinkedInSignIn]: 600,
+  [AppSection.TermsOfService]: 900
+};
 
-    function validateAllFields(): true | string[] {
-        const validationIssues: string[] = [];
-        if (firstName === "") validationIssues.push("missing first name");
-        if (lastName === "") validationIssues.push("missing last name");
-        if (!isValidEmail(email)) validationIssues.push("invalid email address");
-        // if (eventDate == null) validationIssues.push("missing event date");
-        return validationIssues.length ? validationIssues : true;
+const App: FunctionComponent = () => {
+
+  // a super naive alternative to react-router
+  const [viewName, setViewName] = useState<AppSection>(AppSection.LinkedInSignIn);
+  useEffect((): void => {
+
+    const url: URL = new URL(window.location.href);
+    const urlVars: UrlVars = {};
+    url.searchParams.forEach((val, key) => urlVars[key] = val);
+
+    // provided by LinkedIn via its callback mechanism which lands on our /auth/linkedin route
+    const oAuthCode: string = urlVars["code"];
+
+    if (oAuthCode != null) {
+      // special handling for /auth/linkedin?code=<code>
+      return setViewName(AppSection.OAuthCode);
+    } else {
+      // all other cases e.g. `/` , `/privacy-policy` , etc.
+      return setViewName(url.pathname as AppSection);
     }
 
-    async function attemptSubmit(): Promise<void> {
+  }, []); // on mounted
 
-        if (isSubmitting) return;
+  const [errors, setErrors] = useState<string[]>([]);
+  const [feedback, setFeedback] = useState<string>("");
 
-        // clear error and feedback views before making a new submission
-        setErrors([]);
-        setFeedback("");
+  // const [isSubmitting, setIsSubmitting] = useState<boolean>(false);  
+  // function validateAllFields(): true | string[] {
+  //     const validationIssues: string[] = [];
+  //     if (someState == null) validationIssues.push("missing some state");
+  //     return validationIssues.length ? validationIssues : true;
+  // }
 
-        const validationResult: true | string[] = validateAllFields();
-        if (validationResult === true) {
-
-            setIsSubmitting(true);
-            try {
-
-                // send all fields to backend
-                const resp: IRespPayload = await submitEntry({ firstName, lastName, email });
-                setFeedback(resp.message);
-                
-            } catch (e) {
-                // display API call error
-                setErrors([`An error occurred: ${e.message}`]);
-            }
-            setIsSubmitting(false);
-
-        } else {
-            // display validation error(s)
-            setErrors(validationResult);
-        }
-
-    }
-
-    return <div>
-        <Dialog
-          isOpen={true}
-          title={"A db-agnostic, React-based web application starter boilerplate"}
-          isCloseButtonShown={false}
-          style={{ minWidth: 600 }}
-        >
-            <div className={Classes.DIALOG_BODY}>
-                <H5>Demo simple web app <small>(all fields are required)</small></H5>
-                <form action="#">
-                <div style={{ display: "flex", flexDirection: "row" }}>
-                    <div style={{ flexGrow: 1 }}>
-                        <InputGroup
-                            name="firstName"
-                            type="text"
-                            inputMode="text"
-                            fill
-                            placeholder={"first name"}
-                            value={firstName}
-                            onChange={(evt: React.ChangeEvent<HTMLInputElement>) => setFirstName(evt.target.value)}
-                        />
-                    </div>
-                    <div style={{ minWidth: 10, flexGrow: 0 }} />
-                    <div style={{ flexGrow: 1 }}>
-                        <InputGroup
-                            name="lastName"
-                            type="text"
-                            inputMode="text"
-                            fill
-                            placeholder={"last name"}
-                            value={lastName}
-                            onChange={(evt: React.ChangeEvent<HTMLInputElement>) => setLastName(evt.target.value)}
-                        />
-                    </div>
-                </div>
-                <InputGroup
-                    style={{ marginTop: 10, marginBottom: 10 }}
-                    name="email"
-                    type="email"
-                    inputMode="email"
-                    placeholder={"email"}
-                    value={email}
-                    onChange={(evt: React.ChangeEvent<HTMLInputElement>) => setEmail(evt.target.value)}
-                />
-                </form>
-                {feedback !== "" && <Callout style={{ marginTop: 10 }} className="co-feedback">
-                    <span>{feedback}</span>
-                    {" "}
-                    (<a href="/entries" target="_blank" style={{ textDecoration: "underline", color: "inherit" }}>
-                        view all entries as JSON
-                    </a>)
-                </Callout>}
-                {errors.length > 0 && <Callout intent={Intent.DANGER} icon={null} style={{ marginTop: 10 }} className="co-errors">
-                    <ul style={{ padding: "0 0 0 20px", margin: 0 }}>
-                        {errors.map((error, i) => <li key={i}>{error}</li>)}
-                    </ul>
-                </Callout>}
-            </div>
-            <div className={Classes.DIALOG_FOOTER} style={{ textAlign: "right" }}>
-                <Button type="submit" text={"Submit"} intent={Intent.PRIMARY} onClick={attemptSubmit} autoFocus />
-            </div>
-        </Dialog>
-    </div>;
+  return <div>
+    <Dialog
+      isOpen={true}
+      title={"Resume Builder"}
+      isCloseButtonShown={false}
+      transitionDuration={0}
+      style={{ minWidth: dialogMinWidths[viewName] }}
+    >
+      <div className={Classes.DIALOG_BODY}>
+        <MainView viewName={viewName} />
+        {feedback !== "" && <Callout style={{ marginTop: 10 }} className="co-feedback">
+            <span>{feedback}</span>
+        </Callout>}
+        {errors.length > 0 && <Callout intent={Intent.DANGER} icon={null} style={{ marginTop: 10 }} className="co-errors">
+            <ul style={{ padding: "0 0 0 20px", margin: 0 }}>
+                {errors.map((error, i) => <li key={i}>{error}</li>)}
+            </ul>
+        </Callout>}
+      </div>
+      <div className={Classes.DIALOG_FOOTER} style={{ textAlign: "right" }}>
+          <FooterView viewName={viewName} />
+      </div>
+    </Dialog>
+  </div>;
 
 }
+
+interface ViewProps { viewName: AppSection; }
+
+const MainView: FunctionComponent<ViewProps> = ({ viewName }) => {
+  
+  switch (viewName) {
+
+    case AppSection.OAuthCode:
+      return <>
+        <H5>You are getting there.</H5>
+        <p>We are building this section. Please come back soon!</p>
+      </>;
+
+    case AppSection.PrivacyPolicy:
+      return <PrivacyPolicy />;
+      
+    case AppSection.TermsOfService:
+      return <TermsOfService />;
+
+    case AppSection.LinkedInSignIn:
+    default:
+      return <LinkedInSignIn />;
+
+  }
+  
+};
+
+const FooterView: FunctionComponent<ViewProps> = ({ viewName }) => {
+  switch (viewName) {
+    case AppSection.LinkedInSignIn:
+      // return <AnchorButton type="button" text={"Log In"} intent={Intent.PRIMARY} href={getInitLinkedInAuthRequest()} />;
+      return <AnchorButton type="button" text={"Service Not Yet Available"} intent={Intent.PRIMARY} disabled />;
+    default:
+      return null;
+  }
+};
 
 export default App;
