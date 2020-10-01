@@ -6,7 +6,7 @@
 
 1. clone this project and `cd` into the project root directory
 2. run `npm install` (it'll take a while to download all frontend & backend libraries & DevTools)
-3. run `npm run dev` then follow the pointer from the console log
+3. run `npm run start-dev` then follow the pointer from the console log
 
 Changes to the client-side or server-side code will be picked up automatically
 
