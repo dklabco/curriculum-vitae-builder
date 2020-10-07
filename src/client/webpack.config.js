@@ -36,7 +36,8 @@ module.exports = {
       "process.env": "{}"
     }),
     new webpack.EnvironmentPlugin({
-      NODE_ENV: sharedConfig.mode
+      NODE_ENV: sharedConfig.mode,
+      RB_BETA_INVITATION_CODE: process.env.RB_BETA_INVITATION_CODE
     })
   ]
 };
