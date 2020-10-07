@@ -1,58 +1,42 @@
+const webpack = require("webpack");
 const path = require("path");
+const sharedConfig = require("../webpack.shared.config");
 
-const mode = process.env.NODE_ENV || "production";
+if (!process.env.WEBPACK_CLIENT_APP_OUTPUT_DIR) {
+  console.error("Please specify env `WEBPACK_SERVER_APP_OUTPUT_DIR`");
+  process.exit(1);
+}
 
-console.log(`webpack operating under mode \`${mode}\``);
+if (!process.env.WEBPACK_CLIENT_APP_OUTPUT_FILENAME) {
+  console.error("Please specify env `WEBPACK_SERVER_APP_OUTPUT_FILENAME`");
+  process.exit(1);
+}
 
 module.exports = {
-
-    mode,
-    watch: process.env.WATCH === "true",
-
-    entry: "./src/client/main.tsx",
-
-    output: {
-        // path: path.resolve(__dirname, "../../build/public"),
-        // filename: "js/main.js"
-        path: process.env.WEBPACK_OUTPUT_DIR,
-        filename: process.env.WEBPACK_OUTPUT_FILENAME
-    },
-
-    // Enable sourcemaps for debugging webpack's output.
-    devtool: "source-map",
-
-    resolve: {
-        // Add '.ts' and '.tsx' as resolvable extensions.
-        extensions: [".ts", ".tsx", ".js"] // '.js' is so that React itself can be compiled (though this is not required during prod)
-    },
-
-    module: {
-        rules: [
-            {
-                test: /\.ts(x?)$/,
-                exclude: /node_modules/,
-                use: [
-                    {
-                        loader: "ts-loader"
-                    }
-                ]
-            },
-            // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-            {
-                enforce: "pre",
-                test: /\.js$/,
-                loader: "source-map-loader"
-            }
-        ]
-    },
-
-    /* the following optimization is disabled for the sake of simplicity for the exercise */
-    // When importing a module whose path matches one of the following, just
-    // assume a corresponding global variable exists and use that instead.
-    // This is important because it allows us to avoid bundling all of our
-    // dependencies, which allows browsers to cache those libraries between builds.
-    // externals: {
-    //     "react": "React",
-    //     "react-dom": "ReactDOM"
-    // }
+  ...sharedConfig,
+  target: "web",
+  entry: path.resolve(__dirname, "./main.tsx"),
+  output: {
+    path: process.env.WEBPACK_CLIENT_APP_OUTPUT_DIR,
+    filename: process.env.WEBPACK_CLIENT_APP_OUTPUT_FILENAME
+  },
+  resolve: {
+    ...sharedConfig.resolve,
+    // Add '.ts' and '.tsx' as resolvable extensions.
+    extensions: [".ts", ".tsx", ".js"], // '.js' is so that React itself can be compiled (though this is not required during prod)
+    alias: {
+      shared: path.resolve(__dirname, "../shared/")
+    }
+  },
+  // this is needed in webpack v5 (in RC at writing time)
+  plugins: [
+    ...(sharedConfig.plugins || []),
+    new webpack.DefinePlugin({
+      // "process.env": `{"NODE_ENV":"${process.env.NODE_ENV || "production"}}"` // @TODO check why this fails for BlueprintJS
+      "process.env": "{}"
+    }),
+    new webpack.EnvironmentPlugin({
+      NODE_ENV: sharedConfig.mode
+    })
+  ]
 };

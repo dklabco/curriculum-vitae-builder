@@ -1,16 +1,21 @@
 {
-    "compilerOptions": {
-        "outDir": "../../build/public/",
-        "sourceMap": true,
-        "noImplicitAny": true,
-        "module": "commonjs",
-        "target": "es6",
-        "jsx": "react",
-        "strict": true,
-        "lib": [
-            "dom",
-            "dom.iterable",
-            "esnext"
-        ]
-    }
+  "compilerOptions": {
+    "outDir": "../../build/public/",
+    "baseUrl": ".",
+    "paths": {
+      "shared/*": ["../shared/*"]
+    },
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "module": "commonjs",
+    "target": "es5",
+    "jsx": "react",
+    "strict": true,
+    "lib": [
+        "dom",
+        "dom.iterable",
+        "esnext"
+    ]
+  },
+  "exclude": ["./src/server"]
 }
