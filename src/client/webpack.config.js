@@ -37,6 +37,7 @@ module.exports = {
     }),
     new webpack.EnvironmentPlugin({
       NODE_ENV: sharedConfig.mode,
+      LINKEDIN_APP_CLIENT_ID: process.env.LINKEDIN_APP_CLIENT_ID,
       RB_BETA_INVITATION_CODE: process.env.RB_BETA_INVITATION_CODE
     })
   ]
