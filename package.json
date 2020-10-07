@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "make a (themable) PDF file out of your LinkedIn profile",
   "scripts": {
-    "postinstall": "npm run build",
     "build": "scripts/build.sh",
     "start-dev": "WATCH=true NODE_ENV=development scripts/start-dev.sh",
     "start": "NODE_ENV=production node build/server/main.js",
