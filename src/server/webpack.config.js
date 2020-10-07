@@ -37,6 +37,12 @@ module.exports = {
     "unit-http": "commonjs unit-http"
   },
   plugins: [
-    new webpack.DefinePlugin({ "global.GENTLY": false })
+    new webpack.DefinePlugin({ "global.GENTLY": false }),
+    new webpack.EnvironmentPlugin({
+      NODE_ENV: sharedConfig.mode,
+      LINKEDIN_APP_REDIRECT_URI: process.env.LINKEDIN_APP_REDIRECT_URI,
+      LINKEDIN_APP_CLIENT_ID: process.env.LINKEDIN_APP_CLIENT_ID,
+      LINKEDIN_APP_CLIENT_SECRET: process.env.LINKEDIN_APP_CLIENT_SECRET
+    })
   ]
 };

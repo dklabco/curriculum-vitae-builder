@@ -1,11 +1,12 @@
 import * as React from "react";
 import { FunctionComponent } from "react";
 import { useState, useEffect } from "react";
-import { Classes, Dialog, AnchorButton, Intent, H5, Callout } from "@blueprintjs/core";
+import { Classes, Dialog, AnchorButton, Intent, Callout, InputGroup } from "@blueprintjs/core";
 import { LinkedInSignIn } from "./components/LinkedInSignIn";
+import { OAuthCode } from "./components/OAuthCode";
 import { PrivacyPolicy } from "./components/PrivacyPolicy";
 import { TermsOfService } from "./components/TermsOfService";
-import { UrlVars } from "./services";
+import { UrlVars } from "shared/types";
 import { getInitLinkedInAuthRequest } from "./services";
 
 enum AppSection {
@@ -87,10 +88,7 @@ const MainView: FunctionComponent<ViewProps> = ({ viewName }) => {
   switch (viewName) {
 
     case AppSection.OAuthCode:
-      return <>
-        <H5>You are getting there.</H5>
-        <p>We are building this section. Please come back soon!</p>
-      </>;
+      return <OAuthCode />;
 
     case AppSection.PrivacyPolicy:
       return <PrivacyPolicy />;
@@ -107,10 +105,24 @@ const MainView: FunctionComponent<ViewProps> = ({ viewName }) => {
 };
 
 const FooterView: FunctionComponent<ViewProps> = ({ viewName }) => {
+  const [betaCode, setBetaCode] = React.useState<string>("");
   switch (viewName) {
     case AppSection.LinkedInSignIn:
-      // return <AnchorButton type="button" text={"Log In"} intent={Intent.PRIMARY} href={getInitLinkedInAuthRequest()} />;
-      return <AnchorButton type="button" text={"Service Not Yet Available"} intent={Intent.PRIMARY} disabled />;
+      return <InputGroup
+        autoFocus
+        placeholder={"Service in Beta. Please enter your invitation key to proceed"}
+        onChange={(evt: React.ChangeEvent<HTMLInputElement>) => setBetaCode(evt.target.value)}
+        rightElement={
+          <AnchorButton
+            disabled={betaCode !== process.env.RB_BETA_INVITATION_CODE}
+            type="button"
+            text={"Log In"}
+            intent={Intent.PRIMARY}
+            href={getInitLinkedInAuthRequest()}
+          />
+        }
+      />;
+      // return <AnchorButton type="button" text={"Service Not Yet Available"} intent={Intent.PRIMARY} disabled />;
     default:
       return null;
   }
